@@ -20,7 +20,7 @@ services:
   import-osm:
     build: src/import-osm
     networks:
-	  - postgres
+      - postgres
     volumes:
      - ./data:/import
     
