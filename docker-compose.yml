@@ -1,26 +1,40 @@
-postgres:
-  image: mdillon/postgis:9.5
-  ports:
-   - "5432:5432"
-  environment:
-    POSTGRES_DB: osm
-    POSTGRES_USER: osm
-    POSTGRES_PASSWORD: osm
-import-osm:
-  build: src/import-osm
-  links:
-   - postgres:postgres
-  volumes:
-   - ./data:/import
-export-shapefile:
-  build: src/export-shapefile
-  links:
-   - postgres:postgres
-  volumes:
-   - ./data:/data
-calculate-centerlines:
-  build: src/calculate-centerlines
-  links:
-   - postgres:postgres
-  volumes:
-   - ./data:/data
+volumes:
+  pgdata:
+
+networks:
+  postgres:
+    driver: bridge
+
+services:
+  postgres:
+    image: "${POSTGIS_IMAGE:-openmaptiles/postgis}:${TOOLS_VERSION}"
+    # Use "command: postgres -c jit=off" for PostgreSQL 11+ because of slow large MVT query processing
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - postgres
+    ports:
+      - "5432"
+    env_file: .env-postgres
+    
+  import-osm:
+    build: src/import-osm
+    networks:
+	  - postgres
+    volumes:
+     - ./data:/import
+    
+  export-shapefile:
+    build: src/export-shapefile
+    env_file: .env
+    networks:
+      - postgres
+    volumes:
+     - ./data:/data
+
+  calculate-centerlines:
+    build: src/calculate-centerlines
+    networks:
+      - postgres
+    volumes:
+     - ./data:/data
