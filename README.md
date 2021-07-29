@@ -29,7 +29,7 @@ docker-compose up -d postgres
 Now download a OSM PBF extract and store it in the `./data` dir.
 
 ```bash
-wget -P ./data https://s3.amazonaws.com/metro-extracts.mapzen.com/zurich_switzerland.osm.pbf
+wget -P ./data https://download.geofabrik.de/europe/andorra-latest.osm.pbf
 ```
 
 Import the OSM PBF.
