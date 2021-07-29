@@ -1,26 +1,15 @@
-FROM debian:jessie
+FROM python:3.8-slim-buster
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      gdal-bin \
-      libgdal-dev \
-      python \
-      python-pip \
-      python-dev \
-      python-gdal \
+      ca-certificates \
       git \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      build-essential \
-    && rm -rf /var/lib/apt/lists/*
+RUN git clone https://github.com/ungarj/label_centerlines.git
+COPY *.py ./label_centerlines
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      python-scipy \
-      python-shapely \
-    && rm -rf /var/lib/apt/lists/*
+WORKDIR ./label_centerlines
+RUN pip install -r requirements.txt
+RUN python setup.py install
 
-WORKDIR /usr/src/app
-RUN git clone https://github.com/ungarj/label_centerlines.git /usr/src/app
-RUN pip install networkx>=1.11 Fiona>=1.7.0
-
-CMD ["./create_centerlines.py", "--output_driver", "GeoJSON", "/data/osm_lake_polygon.shp", "/data/osm_lake_centerline.geojson"]
+CMD ["./calculate_centerlines.py", "--output_driver", "GeoJSON", "/data/osm_lake_polygon.shp", "/data/osm_lake_centerline.geojson"]
