@@ -3,12 +3,12 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-readonly PG_CONNECT="postgis://$POSTGRES_ENV_POSTGRES_USER:$POSTGRES_ENV_POSTGRES_PASSWORD@$POSTGRES_PORT_5432_TCP_ADDR/$POSTGRES_ENV_POSTGRES_DB"
+readonly PG_CONNECT="postgis://$PGUSER:$PGPASSWORD@$PGHOST/$PGDATABASE"
 readonly DB_SCHEMA="public"
 
 function import_pbf() {
     local pbf_file="$1"
-    imposm3 import \
+    ./imposm3 import \
         -connection "$PG_CONNECT" \
         -mapping "$MAPPING_YAML" \
         -overwritecache \
