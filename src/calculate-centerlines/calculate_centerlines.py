@@ -3,13 +3,17 @@
 import os
 import sys
 import argparse
+import datetime
 import fiona
 import multiprocessing
 from shapely.geometry import shape, mapping
 from functools import partial
 
 from label_centerlines import get_centerline
-#print(help(get_centerline))
+
+def log(msg):
+    """Print provided log message in consistent format."""
+    print('{0}\t{1}'.format(datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S"), msg))
 
 def main(args):
 
@@ -28,7 +32,7 @@ def main(args):
         "--segmentize_maxlen",
         type=float,
         help="maximum length used when segmentizing polygon borders",
-        default=0.5
+        default=100
         )
     parser.add_argument(
         "--max_points",
@@ -73,7 +77,7 @@ def main(args):
             crs=inp_polygons.crs,
             driver=driver
             ) as out_centerlines:
-            pool = multiprocessing.Pool()
+            pool = multiprocessing.Pool(8)
             func = partial(
                 worker,
                 segmentize_maxlen,
@@ -81,6 +85,7 @@ def main(args):
                 simplification,
                 smooth_sigma
             )
+            log("Start")
             try:
                 feature_count = 0
                 for feature_name, output in pool.imap_unordered(
@@ -89,27 +94,35 @@ def main(args):
                     ):
                     feature_count += 1
                     if output:
-                        output["properties"]['NAME'] = output["properties"]['NAME']
+                        #output["properties"]['NAME'] = output["properties"]['NAME']
                         out_centerlines.write(output)
-                        print( "Written Feature %s: %s" %(
-                            feature_count,
-                            feature_name
-                            ))
+                        log( "Written Feature " + str(feature_count) + ": " + feature_name)
+                        #print( "Written Feature %s: %s" %(
+                        #    feature_count,
+                        #    feature_name
+                        #    ))
                     else:
-                        print("Invalid output for feature", feature_name)
+                        log("Invalid output for feature " + feature_name)
+                        #print("Invalid output for feature", feature_name)
             except KeyboardInterrupt:
-                print("Caught KeyboardInterrupt, terminating workers")
+                log("Caught KeyboardInterrupt, terminating workers")
+                #print("Caught KeyboardInterrupt, terminating workers")
                 pool.terminate()
             except Exception as e:
-                if feature_name:
-                    print ("%s: FAILED (%s)" %(feature_name, e))
-                else:
-                    print ("feature: FAILED (%s)" %(e))
-                raise
+                #if "feature_name" in locals():
+                #    log(feature_name + ": FAILED " + str(e))
+                    #print ("%s: FAILED (%s)" %(feature_name, e))
+                #else:
+                log("feature: FAILED " + str(e))
+                    #print ("feature: FAILED (%s)" %(e))
+                #raise
+                pass
             finally:
                 pool.close()
                 pool.join()
 
+    log("Done processing.")
+	
 def worker(
     segmentize_maxlen,
     max_points,
@@ -127,7 +140,8 @@ def worker(
         else:
             feature_name = None
     if feature_name:
-        print ("Processing: ", feature_name)
+        log("Processing: " + feature_name + " with " + str(len(geom.exterior.coords)) + " nodes")
+        #print ("Processing: ", feature_name)
 
     try:
         centerlines_geom = get_centerline(
@@ -138,7 +152,7 @@ def worker(
             smooth_sigma=smooth_sigma
             )
     except TypeError as e:
-        print (e)
+        log(str(e))
     except:
         raise
     if centerlines_geom:
