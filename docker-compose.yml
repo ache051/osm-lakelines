@@ -1,18 +1,19 @@
+version: '3.0'
 volumes:
-  pgdata:
+  lake_pgdata:
 
 networks:
-  postgres:
+  lake_postgres:
     driver: bridge
 
 services:
-  postgres:
-    image: "${POSTGIS_IMAGE:-openmaptiles/postgis}:${TOOLS_VERSION}"
+  lake_postgres:
+    image: openmaptiles/postgis
     # Use "command: postgres -c jit=off" for PostgreSQL 11+ because of slow large MVT query processing
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - lake_pgdata:/var/lib/postgresql/data
     networks:
-      - postgres
+      - lake_postgres
     ports:
       - "5432"
     env_file: .env-postgres
@@ -20,21 +21,22 @@ services:
   import-osm:
     build: src/import-osm
     networks:
-      - postgres
+      - lake_postgres
     volumes:
      - ./data:/import
+    env_file: .env
     
   export-shapefile:
     build: src/export-shapefile
     env_file: .env
     networks:
-      - postgres
+      - lake_postgres
     volumes:
      - ./data:/data
 
   calculate-centerlines:
     build: src/calculate-centerlines
     networks:
-      - postgres
+      - lake_postgres
     volumes:
      - ./data:/data
