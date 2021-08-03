@@ -3,7 +3,11 @@
 
 <img align="right" alt="Lake center lines for labels" width="250" src="lakelines.png" />
 
-An "updated version" of Lukas Martinelli's osm-lakelines using Debian Buster, Python 3.8, NetworkX 2+ and ungarj's updated label_centerlines repsitory. There are two main reasons for this version, one being OpenMapTiles repository is still pulling from Luka's version 0.9 of global lake lines. The second being the probalems I had with foreign character sets (UTF-8) in Python 2 while running Luka's code. Otherwise everything remains identical.
+An "updated version" of Lukas Martinelli's osm-lakelines using newer base images, Imposm3 0.11.1, Python 3.8, NetworkX 2+ and ungarj's updated label_centerlines repsitory. There are two main reasons for this version, one being OpenMapTiles repository is still pulling from Luka's version 0.9 of global lake lines. The second being the problems I had with foreign character sets (UTF-8) in Python 2 while running Luka's code.
+
+Database parameters are now parsed from .env and .env-postgres so to integrate with OpenMapTiles. The parameter -segmentize_maxlen is increased from 0.5 to 100 in order to tackle a ["Polygon has too few points" error](https://github.com/RanadeepPolavarapu/docker-nginx-http3/issues/7).
+
+Otherwise everything remains **relatively** identical.
 
 Calculate nice centered linestrings for labelling lake polygons.
 This repository provides downloadable Shapefiles containing center lines for lake polygons
