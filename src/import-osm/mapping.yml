@@ -10,6 +10,9 @@ tables:
     - name: name
       key: name
       type: string
+    - name: name_en
+      key: name_en
+      type: string
     mapping:
       water:
       - lake
